@@ -33,21 +33,21 @@ export function ParseISB(buffer: Buffer): ImageObject {
   const height          = buffer.readUInt32LE(12);
 
   if (Signature.equals(CorrectSignature)) {
-    throw new Error("Invalid ISB: Invalid file fixed signature code in header");
+    throw new Error("Invalid ISB: Invalid file fixed signature code in header (Parsed: " + Signature + ")");
   }
 
   if (version > Currentversion) {
-    throw new Error("Invalid ISB: The latest version is " + Currentversion);
+    throw new Error("Invalid ISB: The latest version is " + Currentversion + " (Parsed: " + version + ")");
   } else if (version < Currentversion) {
-    throw new Error("Invalid ISB: not support previous versions");
+    throw new Error("Invalid ISB: not support previous versions" + " (Parsed: " + version + ")");
   }
 
   if (width === 0 || height === 0) {
-    throw new Error("Invalid ISB: zero dimension");
+    throw new Error("Invalid ISB: zero dimension" + " (Parsed: " + "[" + width + ", " + height + "]" + ")");
   }
 
   if (bitsPerChannel % 8 !== 0) {
-    throw new Error("Invalid ISB: bitsPerChannel must be multiple of 8");
+    throw new Error("Invalid ISB: bitsPerChannel must be multiple of 8" + " (Parsed: " + bitsPerChannel + ")");
   }
 
   const bytesPerChannel = bitsPerChannel / 8;
@@ -101,7 +101,7 @@ function NormalizeChannels(channels: number): sharp.Channels {
     case 1: return 1;
     case 3: return 3;
     case 4: return 4;
-    default: throw new Error("unsupported channel count");
+    default: throw new Error("unsupported channel count" + " (Parsed: " + channels + ")");
   }
 }
 
