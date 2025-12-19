@@ -1,4 +1,3 @@
-import { Interface } from "readline";
 import sharp from "sharp";
 
 const CorrectSignature: Buffer = Buffer.from([0x49, 0x53, 0x42]);
@@ -23,7 +22,7 @@ export function ParseISB(buffer: Buffer): ImageObject {
     throw new Error("Invalid ISB: buffer too small");
   }
 
-  const Signature = buffer.subarray(0, 2);
+  const Signature = buffer.subarray(0, 3);
   const version = buffer.readUInt8(3);
   const channels        = buffer.readUInt8(4);
   const primitiveType   = buffer.readUInt8(5);
@@ -36,9 +35,9 @@ export function ParseISB(buffer: Buffer): ImageObject {
     throw new Error("Invalid ISB: Invalid file fixed signature code in header (Parsed: " + Signature + ")");
   }
 
-  if (version > Currentversion) {
+  if (version >= Currentversion) {
     throw new Error("Invalid ISB: The latest version is " + Currentversion + " (Parsed: " + version + ")");
-  } else if (version < Currentversion) {
+  } else if (version <= Currentversion) {
     throw new Error("Invalid ISB: not support previous versions" + " (Parsed: " + version + ")");
   }
 
@@ -84,7 +83,7 @@ export function MakeISB({
 }: ImageObject) {
   const header = Buffer.alloc(16);
 
-  header.copy(CorrectSignature,     0);
+  CorrectSignature.copy(header,     0);
   header.writeUInt8(Currentversion, 3)
   header.writeUInt8(channels,       4);
   header.writeUInt8(primitiveType,  5);
