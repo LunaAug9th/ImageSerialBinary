@@ -35,9 +35,9 @@ export function ParseISB(buffer: Buffer): ImageObject {
     throw new Error("Invalid ISB: Invalid file fixed signature code in header (Parsed: " + Signature + ")");
   }
 
-  if (version >= Currentversion) {
+  if (version > Currentversion) {
     throw new Error("Invalid ISB: The latest version is " + Currentversion + " (Parsed: " + version + ")");
-  } else if (version <= Currentversion) {
+  } else if (version < Currentversion) {
     throw new Error("Invalid ISB: not support previous versions" + " (Parsed: " + version + ")");
   }
 
