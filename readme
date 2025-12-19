@@ -1,0 +1,63 @@
+.ISB (Image Serial Binary) Format
+Author: @Henry7611913083
+
+[Intro]
+
+This format is an uncompressed RAW image format similar to BMP
+It does not include textual metadata such as EXIF
+The data structure is defined as follows:
+
+[ String-ASCII Little-Endian | 3 Bytes | File Signature ]
+[ Uint8 | 1 Byte | Version Number ]
+[ Uint8 | 1 Byte | number of channels ]
+[ Uint8 | 1 Byte | Pixel primitive type ]
+[ Uint8 | 1 Byte | number of bits per pixel in a channel ]
+[ Uint8 | 1 Byte | The order of the channel ]
+[ Uint32 Little-Endian | 4 Bytes | horizontal length ]
+[ Uint32 Little-Endian  | 4 Bytes | vertical length ]
+ . . . Image RAW
+
+[ Metadata for image parsing ]
+
+And the image parsing required 16 bytes code mapping before each is like this:
+
+File Signature is "ISB" ASCII string
+This fixed code and Version Number is used to verify formatting in the decoder
+
+The number of channels is parsed with an integer and read
+
+Pixel data types include unsigned integers, signed integers, and floating points
+0x00 = unsigned integer
+0x01 = signed integer
+0x02 = floating point
+
+The number of bits per pixel in a channel represents the number of bits of integer data in the pixel
+for example, uint8 is 8 bits, so it is 8
+
+The order of the channel data is
+0x00 = Gray
+0x01 = GA
+0x02 = RGB
+0x03 = BGR
+0x04 = RGBA
+0x05 = BGRA
+0x06 = ARGB
+0x07 = ABGR
+
+The channel number integer is the same channel order code twice
+but this is for verification purposes, and if the code means RGBA
+an error occurs when the channel integer is not 4
+
+why both horizontally and vertically length data exist is
+to check if the vertical length does not fit in a rectangular image after parsing horizontally
+
+If it doesn't fit, I'll throw an error
+
+To indicate in uint8 RGBA how to arrange the RAW image pixel data order:
+[ uint8 | Red ] [ uint8 | Green ] [ uint8 | Blue ] [ uint8 | Alpha ] [ uint8 | Red ] . . . 
+
+[Outro]
+
+I made this format because I need a format that is a little more research-specific than BMP
+and if you don't need text metadata like EXIF and make the uncompressed implementation very simple
+it might be preferred to write this format
