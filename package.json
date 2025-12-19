@@ -6,7 +6,6 @@
   "version": "1.0.0",
   "description": "Image Serial Binary Format",
   "main": "index.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +18,12 @@
   "bugs": {
     "url": "https://github.com/lunaaug9th/imageserialbinary-Format/issues"
   },
-  "homepage": "https://github.com/lunaaug9th/imageserialbinary-Format#readme"
+  "homepage": "https://github.com/lunaaug9th/imageserialbinary-Format#readme",
+  "volta": {
+    "node": "24.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  }
 }

@@ -1,12 +1,24 @@
+import { Interface } from "readline";
 import sharp from "sharp";
 
-const CorrectSignature = Buffer.from([0x49, 0x53, 0x42]);
-const Currentversion = 1;
+const CorrectSignature: Buffer = Buffer.from([0x49, 0x53, 0x42]);
+const Currentversion: number = 1;
+
+interface ImageObject {
+  version: number;
+  channels: number;
+  primitiveType: number;
+  bitsPerChannel: number;
+  channelOrder: number;
+  width: number;
+  height: number;
+  raw: Buffer
+}
 
 /* =========================
  * ParseISB
  * ========================= */
-export function ParseISB(buffer) {
+export function ParseISB(buffer: Buffer): ImageObject {
   if (buffer.length < 16) {
     throw new Error("Invalid ISB: buffer too small");
   }
@@ -69,7 +81,7 @@ export function MakeISB({
   width,
   height,
   raw
-}) {
+}: ImageObject) {
   const header = Buffer.alloc(16);
 
   header.copy(CorrectSignature,     0);
@@ -84,11 +96,24 @@ export function MakeISB({
   return Buffer.concat([header, raw]);
 }
 
+function NormalizeChannels(channels: number): sharp.Channels {
+  switch (channels) {
+    case 1: return 1;
+    case 3: return 3;
+    case 4: return 4;
+    default: throw new Error("unsupported channel count");
+  }
+}
+
+function isSharpChannel(n: number): n is sharp.Channels {
+  return n === 1 || n === 3 || n === 4;
+}
+
 /* =========================
  * sharpISB (adapter)
  * ========================= */
-export function sharpISB(isb) {
-  const {
+export function sharpISB(isb: ImageObject): any {
+  let {
     channels,
     primitiveType,
     bitsPerChannel,
@@ -97,6 +122,8 @@ export function sharpISB(isb) {
     height,
     raw
   } = isb;
+
+  channels = NormalizeChannels(channels)
 
   /* sharp 지원 범위 검사 */
   if (primitiveType !== 0x00) {
@@ -107,13 +134,9 @@ export function sharpISB(isb) {
     throw new Error("sharpISB: only 8/16 bits per channel supported");
   }
 
-  if (![1, 3, 4].includes(channels)) {
-    throw new Error("sharpISB: unsupported channel count");
-  }
-
   /* 채널 순서 정규화 */
-  let normalizedRaw = raw;
-  let normalizedChannels = channels;
+  let normalizedRaw: Buffer = raw;
+  let normalizedChannels: sharp.Channels = channels as sharp.Channels;
 
   // BGR → RGB
   if (channelOrder === 0x03 && channels === 3) {
@@ -135,6 +158,10 @@ export function sharpISB(isb) {
     normalizedRaw = shiftABGR(raw, bitsPerChannel);
   }
 
+  if (!isSharpChannel(channels)) {
+    throw new Error("invalid channel count");
+  }
+
   return sharp(normalizedRaw, {
     raw: {
       width,
@@ -147,7 +174,7 @@ export function sharpISB(isb) {
 /* =========================
  * Channel helpers
  * ========================= */
-function swapRGB(buf, bpc) {
+function swapRGB(buf: Buffer, bpc: number): Buffer {
   const step = bpc / 8 * 3;
   const out = Buffer.alloc(buf.length);
 
@@ -159,7 +186,7 @@ function swapRGB(buf, bpc) {
   return out;
 }
 
-function swapRGBA(buf, bpc) {
+function swapRGBA(buf: Buffer, bpc: number): Buffer {
   const step = bpc / 8 * 4;
   const out = Buffer.alloc(buf.length);
 
@@ -172,7 +199,7 @@ function swapRGBA(buf, bpc) {
   return out;
 }
 
-function shiftARGB(buf, bpc) {
+function shiftARGB(buf: Buffer, bpc: number): Buffer {
   const step = bpc / 8 * 4;
   const out = Buffer.alloc(buf.length);
 
@@ -185,7 +212,7 @@ function shiftARGB(buf, bpc) {
   return out;
 }
 
-function shiftABGR(buf, bpc) {
+function shiftABGR(buf: Buffer, bpc: number): Buffer {
   const step = bpc / 8 * 4;
   const out = Buffer.alloc(buf.length);
 

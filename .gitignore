@@ -1,3 +1,6 @@
 node_modules/
 package-lock.json
 test/
+index.js
+index.js.map
+index.d.ts
