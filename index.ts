@@ -31,7 +31,7 @@ export function ParseISB(buffer: Buffer): ImageObject {
   const width           = buffer.readUInt32LE(8);
   const height          = buffer.readUInt32LE(12);
 
-  if (Signature.equals(CorrectSignature)) {
+  if (!Signature.equals(CorrectSignature)) {
     throw new Error("Invalid ISB: Invalid file fixed signature code in header (Parsed: " + Signature + ")");
   }
 
